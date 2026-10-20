@@ -1,0 +1,17 @@
+name: probe-ci
+on: [push, pull_request, merge_group]
+permissions:
+  contents: read
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait
+        run: sleep 45
+      - name: Fail for FAIL commit message
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}
+        run: |
+          message=$(gh api repos/${{ github.repository }}/commits/$HEAD_SHA --jq '.commit.message')
+          if [[ "$message" == *FAIL* ]]; then exit 1; fi
